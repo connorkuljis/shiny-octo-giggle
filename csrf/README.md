@@ -1,6 +1,6 @@
 # Cross Site Request Forgery (CSRF)
 
-- report: [https://docs.google.com/document/d/1lPW8Eg8lC_FI3tnrdd1jGDTngJBxdmPDHivksxXLz00/edit#heading=h.qvr8qj1vjztu](https://docs.google.com/document/d/1lPW8Eg8lC_FI3tnrdd1jGDTngJBxdmPDHivksxXLz00/edit#heading=h.qvr8qj1vjztu)
+- report: [https://docs.google.com/document/d/1lPW8Eg8lC_FI3tnrdd1jGDTngJBxdmPDHivksxXLz00/edit?usp=sharing](https://docs.google.com/document/d/1lPW8Eg8lC_FI3tnrdd1jGDTngJBxdmPDHivksxXLz00/edit?usp=sharing)
 
 ## Title
 Tricking users into performing unauthorized actions through Cross-Site Request Forgery (CSRF)
