@@ -1,6 +1,6 @@
 # Cross Site Request Forgery (CSRF)
 
-# Design Specifications
+- report: [https://docs.google.com/document/d/1lPW8Eg8lC_FI3tnrdd1jGDTngJBxdmPDHivksxXLz00/edit#heading=h.qvr8qj1vjztu](https://docs.google.com/document/d/1lPW8Eg8lC_FI3tnrdd1jGDTngJBxdmPDHivksxXLz00/edit#heading=h.qvr8qj1vjztu)
 
 ## Title
 Tricking users into performing unauthorized actions through Cross-Site Request Forgery (CSRF)
@@ -33,13 +33,6 @@ Tricking users into performing unauthorized actions through Cross-Site Request F
 - `php`
 - `apache`
 
-## MacOS
----
-`sudo apachectl start`
-`sudo mkdir /Library/WebServer/Documents/csrf`
-`cp *.php /Library/WebServer/Documents/csrf`
-open `http://localhost/csrf/index.php`
-``
 
 
 
