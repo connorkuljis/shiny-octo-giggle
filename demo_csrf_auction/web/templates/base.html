@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html data-theme="dark">
+<html>
 
 <head>
   <meta charset="utf-8">
@@ -16,7 +16,7 @@
     <li>🧑‍🔧 <u>{{ .Username }}</u></li>
     <li> <a href='/users/logout'>Log-out</a> </li>
     {{ else }}
-    <li> <a href='/users/login'>Log-in</a> </li>
+    <li> <a role="button" class="secondary" href='/users/login'>Log-in</a> </li>
     {{ end }}
   </ul>
 </nav>
