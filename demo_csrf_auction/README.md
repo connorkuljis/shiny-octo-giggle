@@ -1,11 +1,16 @@
-# CSRF Demo Instructions
+# (Kodkod) CSRF Demo Instructions
+
+## Usage
 * build the program
 `go build -o ./tmp/main ./cmd/kodkod`
 
 * run the binary
 `./tmp/main`
 
-# Build Tool for Live Reloading
+* open
+-[http://localhost:8080](http://localhost:8080)
+
+### Development: Build Tool for Live Reloading
 `air -c .air.toml`
 `air`
 
@@ -44,6 +49,5 @@ Tricking users into performing unauthorized actions through Cross-Site Request F
 
 # Install
 ## Requirements
-- `mysql`
-- `php`
-- `apache`
+- `golang`
+- `sqlite`
