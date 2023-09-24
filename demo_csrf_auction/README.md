@@ -1,16 +1,18 @@
 # (Kodkod) CSRF Demo Instructions
 
 ## Usage
-* build the program
-`go build -o ./tmp/main ./cmd/kodkod`
+### Prerequisite
+- install go: `sudo snap install go --classic`
 
-* run the binary
-`./tmp/main`
+* build the program
+`go run cmd/kodkod/main.go`
 
 * open
 -[http://localhost:8080](http://localhost:8080)
 
 ### Development: Build Tool for Live Reloading
+`go install github.com/cosmtrek/air@latest`
+
 `air -c .air.toml`
 `air`
 
