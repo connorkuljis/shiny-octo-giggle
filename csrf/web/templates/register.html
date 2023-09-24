@@ -1,0 +1,9 @@
+{{ define "content" }}
+<h1>Register Account</h1>
+<form action="/users/register" method="post">
+  <input name="username" type="text" placeholder="username" required />
+  <input name="password" type="text" placeholder="password" required />
+  <button type="submit">Register</button>
+</form>
+<p>Already have an account? <a href="/users/login">Log-in here.</a></p>
+{{ end }}

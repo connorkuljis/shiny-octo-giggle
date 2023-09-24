@@ -1,0 +1,35 @@
+{{ define "content" }}
+
+<header class="container">
+
+  <hgroup>
+    <h1>Auction Site</h1>
+    <h2>Join the bidding frenzy and seize your chance to win exclusive treasures at our electrifying auction site!</h2>
+  </hgroup>
+
+  <!-- if not logged in, display a button to tell users to register -->
+  {{ if not .IsLoggedIn }}
+  <p><a href="/users/register" role="button">Register now</a></p>
+  {{ end }}
+
+</header>
+
+<h3> Current Listings </h3>
+<table>
+  <tr>
+    <th>Date</th>
+    <th>Title</th>
+    <th>Description</th>
+    <th>Price</th>
+  </tr>
+  {{ range .AuctionData }}
+  <tr>
+    <td>{{ .Date.Format "2006-01-02"}}</td>
+    <td>{{ .Title}}</td>
+    <td>{{ .Description}}</td>
+    <td>$ {{printf "%.2f" .Price}}</td>
+  </tr>
+  {{ end }}
+
+</table>
+{{ end }}

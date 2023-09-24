@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html data-theme="dark">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Template Example</title>
+  <link rel="stylesheet" href="/web/static/css/pico.min.css" />
+</head>
+
+
+<nav class="container-fluid">
+  <li><a class="button" href="/">Home</a></li>
+  <ul>
+    {{ if .IsLoggedIn }}
+    <li>🧑‍🔧 <u>{{ .Username }}</u></li>
+    <li> <a href='/users/logout'>Log-out</a> </li>
+    {{ else }}
+    <li> <a href='/users/login'>Log-in</a> </li>
+    {{ end }}
+  </ul>
+</nav>
+
+
+<main class="container">
+  {{ template "content" . }}
+</main>
+
+<footer class="container">
+  <small>Built by group-30</small>
+</footer>
+
+</html>
