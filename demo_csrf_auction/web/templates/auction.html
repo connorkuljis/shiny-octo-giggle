@@ -1,0 +1,22 @@
+{{ define "content" }}
+<article>
+  <header>
+    <hgroup>
+      <h1>Item name</h1>
+      <h2>Description goes here.</h2>
+    </hgroup>
+  </header>
+  <img src="/web/static/img/t-shirt.jpeg" alt="item" />
+
+  <a href="/bid?auction=1&amount=100">Vulnerable Link!</a>
+
+
+  <footer>
+    <form>
+      <input type="number" id="amount" placeholder="$ Bid Amount" />
+      <button type="submit">Bid Now</button>
+    </form>
+  </footer>
+
+</article>
+{{ end }}

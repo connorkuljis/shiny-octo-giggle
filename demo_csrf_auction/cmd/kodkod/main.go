@@ -47,6 +47,10 @@ func main() {
 	http.HandleFunc("/users/logout", logoutHandler)
 	http.HandleFunc("/users/register", registerHandler)
 
+	http.HandleFunc("/auction", auctionHandler)
+
+	http.HandleFunc("/bid", vulnerableHandler)
+
 	// Spin-up server.
 	http.ListenAndServe(":8080", nil)
 
@@ -106,6 +110,8 @@ func logHttpRequest(r *http.Request) {
 func indexHandler(w http.ResponseWriter, r *http.Request) {
 	logHttpRequest(r)
 	session, _ := store.Get(r, CookieName) // will create a new cookie if not exists
+	fmt.Print("SameSite: ")
+	log.Println(session.Options.SameSite)
 	data := setPageData(session)
 
 	err := session.Save(r, w)
@@ -178,4 +184,49 @@ func logoutHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	http.Redirect(w, r, "/", http.StatusSeeOther)
+}
+
+func auctionHandler(w http.ResponseWriter, r *http.Request) {
+	logHttpRequest(r)
+	session, _ := store.Get(r, CookieName)
+
+	err := session.Save(r, w)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	tmpl, err := template.ParseFiles("web/templates/base.html", "web/templates/auction.html")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	tmpl.Execute(w, nil)
+}
+
+func vulnerableHandler(w http.ResponseWriter, r *http.Request) {
+	logHttpRequest(r)
+	session, _ := store.Get(r, CookieName)
+	data := setPageData(session)
+
+	err := session.Save(r, w)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Parse the query parameters
+	query := r.URL.Query()
+	auction := query.Get("auction")
+	amount := query.Get("amount")
+
+	// Validate the parameters (you may want to perform more thorough validation)
+	if auction == "" || amount == "" {
+		http.Error(w, "Invalid request. Missing 'auction' or 'amount' parameters.", http.StatusBadRequest)
+		return
+	}
+
+	// Respond with a success message
+	response := fmt.Sprintf("Auction successful! ''%s' has placed bid $%s to %s's auction.", data.Username, amount, auction)
+	w.Write([]byte(response))
 }
