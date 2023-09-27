@@ -6,6 +6,7 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/connorkuljis/kodkod/internal/auctions"
 
@@ -27,9 +28,10 @@ var store = sessions.NewCookieStore([]byte("verySecretValue"))
 
 // Data object for templates to access information about a session.
 type PageData struct {
-	Username    string
-	AuctionData []auction.Auction
-	IsLoggedIn  bool
+	Username       string
+	IsLoggedIn     bool
+	AuctionData    []auction.Auction
+	CurrentAuction auction.Auction
 }
 
 // Entry point to our application
@@ -47,7 +49,7 @@ func main() {
 	http.HandleFunc("/users/logout", logoutHandler)
 	http.HandleFunc("/users/register", registerHandler)
 
-	http.HandleFunc("/auction", auctionHandler)
+	http.HandleFunc("/auction/", auctionHandler)
 
 	http.HandleFunc("/bid", vulnerableHandler)
 
@@ -110,8 +112,6 @@ func logHttpRequest(r *http.Request) {
 func indexHandler(w http.ResponseWriter, r *http.Request) {
 	logHttpRequest(r)
 	session, _ := store.Get(r, CookieName) // will create a new cookie if not exists
-	fmt.Print("SameSite: ")
-	log.Println(session.Options.SameSite)
 	data := setPageData(session)
 
 	err := session.Save(r, w)
@@ -189,8 +189,25 @@ func logoutHandler(w http.ResponseWriter, r *http.Request) {
 func auctionHandler(w http.ResponseWriter, r *http.Request) {
 	logHttpRequest(r)
 	session, _ := store.Get(r, CookieName)
+	data := setPageData(session)
 
-	err := session.Save(r, w)
+	s := r.URL.Path[len("/auction/"):]
+	auctionID, err := strconv.Atoi(s)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// get from db
+	var a auction.Auction
+	a, err = auction.GetAuctionById(db, auctionID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	data.CurrentAuction = a
+
+	err = session.Save(r, w)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -201,7 +218,7 @@ func auctionHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	tmpl.Execute(w, nil)
+	tmpl.Execute(w, data)
 }
 
 func vulnerableHandler(w http.ResponseWriter, r *http.Request) {
@@ -220,7 +237,7 @@ func vulnerableHandler(w http.ResponseWriter, r *http.Request) {
 	auction := query.Get("auction")
 	amount := query.Get("amount")
 
-	// Validate the parameters (you may want to perform more thorough validation)
+	// Validate the parameters
 	if auction == "" || amount == "" {
 		http.Error(w, "Invalid request. Missing 'auction' or 'amount' parameters.", http.StatusBadRequest)
 		return

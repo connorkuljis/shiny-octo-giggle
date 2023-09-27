@@ -20,7 +20,7 @@
     <th>Date</th>
     <th>Title</th>
     <th>Description</th>
-    <th>Price</th>
+    <th>Current Bid</th>
     <th></th>
   </tr>
   {{ range .AuctionData }}
@@ -29,7 +29,7 @@
     <td>{{ .Title}}</td>
     <td>{{ .Description}}</td>
     <td>$ {{printf "%.2f" .Price}}</td>
-    <td><a href="/auction">show</a></td>
+    <td><a href="/auction/{{ .Id}}">show</a></td>
   </tr>
   {{ end }}
 
