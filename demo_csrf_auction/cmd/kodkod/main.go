@@ -223,6 +223,7 @@ func auctionHandler(w http.ResponseWriter, r *http.Request) {
 
 func vulnerableHandler(w http.ResponseWriter, r *http.Request) {
 	logHttpRequest(r)
+	log.Println(r)
 	session, _ := store.Get(r, CookieName)
 	data := setPageData(session)
 
@@ -244,6 +245,6 @@ func vulnerableHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Respond with a success message
-	response := fmt.Sprintf("Auction successful! ''%s' has placed bid $%s to %s's auction.", data.Username, amount, auction)
+	response := fmt.Sprintf("Auction successful! '%s' has placed bid $%s to %s's auction.", data.Username, amount, auction)
 	w.Write([]byte(response))
 }

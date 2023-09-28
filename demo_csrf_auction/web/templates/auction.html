@@ -1,27 +1,31 @@
 {{ define "content" }}
-<article>
 
-  <!-- Header -->
-  <header>
-    <hgroup>
-      <h1>{{ .CurrentAuction.Title }}</h1>
-      <h2>{{ .CurrentAuction.Description }}</h2>
-    </hgroup>
+<!-- Header -->
+<header>
+  <hgroup>
+    <h1>{{ .CurrentAuction.Title }}</h1>
+    <h6>{{ .CurrentAuction.Description }}</h6>
     <mark>${{ .CurrentAuction.Price }}</mark>
-  </header>
+  </hgroup>
+</header>
 
-  <!-- Bidding Form -->
-  <h1>Place Bid</h1>
-  <form>
-    <input type="number" id="amount" placeholder="$ Bid Amount" />
-    <button type="submit">Bid Now</button>
-  </form>
-
+<div class="grid">
   <!-- Image -->
-  <footer>
+  <div>
     <img src="/web/static/img/t-shirt.jpeg" alt="item" />
     <a href="/bid?auction=1&amount=100">Vulnerable Link!</a>
-  </footer>
+  </div>
 
-</article>
+  <!-- Bidding Form -->
+  <div>
+    <h2>Place Bid</h2>
+    <form method="get" action="/bid">
+      <input type="hidden" id="auctionID" name="auction" value={{ .CurrentAuction.Id }} />
+      <input type="number" id="amount" name="amount" placeholder="$ Bid Amount" />
+      <button type="submit">Bid Now</button>
+    </form>
+  </div>
+</div>
+
+
 {{ end }}
