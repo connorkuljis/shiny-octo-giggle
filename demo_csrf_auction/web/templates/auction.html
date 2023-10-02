@@ -21,6 +21,7 @@
     <h2>Place Bid</h2>
     {{ if .IsLoggedIn}}
     <form method="get" action="/bid">
+      {{ .CsrfField }}
       <input type="hidden" id="auctionID" name="auction" value={{ .CurrentAuction.Id }} />
       <input type="number" id="amount" name="amount" placeholder="$ Bid Amount" />
       <button type="submit">Bid Now</button>

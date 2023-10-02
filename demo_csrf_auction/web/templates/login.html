@@ -1,6 +1,7 @@
 {{ define "content" }}
 <h1>Login</h1>
 <form action="/users/login" method="post">
+  {{ .CsrfField }}
   <input name="username" type="text" placeholder="username" required />
   <input name="password" type="text" placeholder="password" required />
   <button type="submit">Log-in</button>

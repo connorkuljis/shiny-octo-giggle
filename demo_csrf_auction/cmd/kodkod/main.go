@@ -8,8 +8,10 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/connorkuljis/kodkod/internal/auctions"
+	auction "github.com/connorkuljis/kodkod/internal/auctions"
 
+	"github.com/gorilla/csrf"
+	"github.com/gorilla/mux"
 	"github.com/gorilla/sessions"
 
 	_ "github.com/mattn/go-sqlite3"
@@ -32,6 +34,7 @@ type PageData struct {
 	IsLoggedIn     bool
 	AuctionData    []auction.Auction
 	CurrentAuction auction.Auction
+	CsrfField      template.HTML
 }
 
 // Entry point to our application
@@ -40,21 +43,25 @@ func main() {
 
 	instantiateDBConnection()
 
+	router := mux.NewRouter()
 	// https://stackoverflow.com/questions/27945310/why-do-i-need-to-use-http-stripprefix-to-access-my-static-files
-	http.Handle("/web/static/", http.StripPrefix("/web/static/", setupStaticFileServerHandler()))
+	router.Handle("/web/static/", http.StripPrefix("/web/static/", setupStaticFileServerHandler()))
 
 	// Map actions to handlers.
-	http.HandleFunc("/", indexHandler)
-	http.HandleFunc("/users/login", loginHandler)
-	http.HandleFunc("/users/logout", logoutHandler)
-	http.HandleFunc("/users/register", registerHandler)
+	router.HandleFunc("/", indexHandler)
+	router.HandleFunc("/users/login", loginHandler)
+	router.HandleFunc("/users/logout", logoutHandler)
+	router.HandleFunc("/users/register", registerHandler)
 
-	http.HandleFunc("/auction/", auctionHandler)
+	router.HandleFunc("/auction/{auctionID}", auctionHandler)
 
-	http.HandleFunc("/bid", bidHandler)
+	router.HandleFunc("/bid", bidHandler)
 
-	// Spin-up server.
-	http.ListenAndServe(":8080", nil)
+	var csrfMiddleware = csrf.Protect(
+		[]byte("your-secret-key"), // Replace with your own secret key
+		csrf.Secure(false),        // Set to true in production to enforce HTTPS
+	)
+	http.ListenAndServe(":8080", csrfMiddleware(router))
 
 	db.Close()
 }
@@ -133,6 +140,8 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 // authenticated and redirected to the default handler.
 func loginHandler(w http.ResponseWriter, r *http.Request) {
 	session, _ := store.Get(r, CookieName)
+	data := PageData{}
+	data.CsrfField = csrf.TemplateField(r)
 	if r.Method == "GET" {
 		logHttpRequest(r)
 		tmpl, err := template.ParseFiles("web/templates/base.html", "web/templates/login.html")
@@ -140,7 +149,7 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		tmpl.Execute(w, nil)
+		tmpl.Execute(w, data)
 	} else {
 		r.ParseForm()
 		// TODO: validate passwords with users table
@@ -190,8 +199,10 @@ func auctionHandler(w http.ResponseWriter, r *http.Request) {
 	logHttpRequest(r)
 	session, _ := store.Get(r, CookieName)
 	data := setPageData(session)
+	data.CsrfField = csrf.TemplateField(r)
 
-	s := r.URL.Path[len("/auction/"):]
+	vars := mux.Vars(r)
+	s := vars["auctionID"]
 	auctionID, err := strconv.Atoi(s)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
