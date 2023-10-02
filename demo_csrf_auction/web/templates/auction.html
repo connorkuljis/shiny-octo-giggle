@@ -19,11 +19,18 @@
   <!-- Bidding Form -->
   <div>
     <h2>Place Bid</h2>
+    {{ if .IsLoggedIn}}
     <form method="get" action="/bid">
       <input type="hidden" id="auctionID" name="auction" value={{ .CurrentAuction.Id }} />
       <input type="number" id="amount" name="amount" placeholder="$ Bid Amount" />
       <button type="submit">Bid Now</button>
     </form>
+    {{ else }}
+    <form action="/users/login">
+      <input type="text" id="placeholder" placeholder="Please Login to place bid." disabled />
+      <button type="submit">Login</button>
+    </form>
+    {{ end }}
   </div>
 </div>
 
