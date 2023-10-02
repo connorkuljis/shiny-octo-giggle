@@ -51,7 +51,7 @@ func main() {
 
 	http.HandleFunc("/auction/", auctionHandler)
 
-	http.HandleFunc("/bid", vulnerableHandler)
+	http.HandleFunc("/bid", bidHandler)
 
 	// Spin-up server.
 	http.ListenAndServe(":8080", nil)
@@ -221,9 +221,9 @@ func auctionHandler(w http.ResponseWriter, r *http.Request) {
 	tmpl.Execute(w, data)
 }
 
-func vulnerableHandler(w http.ResponseWriter, r *http.Request) {
+// example: GET /bid/{:auctionID}?amount=100
+func bidHandler(w http.ResponseWriter, r *http.Request) {
 	logHttpRequest(r)
-	log.Println(r)
 	session, _ := store.Get(r, CookieName)
 	data := setPageData(session)
 
