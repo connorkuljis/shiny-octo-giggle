@@ -13,17 +13,16 @@
   <!-- Image -->
   <div>
     <img src="/web/static/img/t-shirt.jpeg" alt="item" />
-    <a href="/bid?auction=1&amount=100">Vulnerable Link!</a>
   </div>
 
   <!-- Bidding Form -->
   <div>
     <h2>Place Bid</h2>
     {{ if .IsLoggedIn}}
-    <form method="get" action="/bid">
+    <form method="post" action="/bid">
       {{ .CsrfField }}
       <input type="hidden" id="auctionID" name="auction" value={{ .CurrentAuction.Id }} />
-      <input type="number" id="amount" name="amount" placeholder="$ Bid Amount" />
+      <input type="number" id="amount" name="amount" placeholder="$ Bid Amount" required />
       <button type="submit">Bid Now</button>
     </form>
     {{ else }}

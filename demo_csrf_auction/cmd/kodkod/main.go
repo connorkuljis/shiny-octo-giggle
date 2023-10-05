@@ -35,6 +35,7 @@ type PageData struct {
 	AuctionData    []auction.Auction
 	CurrentAuction auction.Auction
 	CsrfField      template.HTML
+	Message        string
 }
 
 // Entry point to our application
@@ -44,8 +45,10 @@ func main() {
 	instantiateDBConnection()
 
 	router := mux.NewRouter()
+
 	// https://stackoverflow.com/questions/27945310/why-do-i-need-to-use-http-stripprefix-to-access-my-static-files
-	router.Handle("/web/static/", http.StripPrefix("/web/static/", setupStaticFileServerHandler()))
+	s := http.StripPrefix("/web/static/", setupStaticFileServerHandler())
+	router.PathPrefix("/web/static/").Handler(s)
 
 	// Map actions to handlers.
 	router.HandleFunc("/", indexHandler)
@@ -65,8 +68,6 @@ func main() {
 
 	db.Close()
 }
-
-// --- Private Functions ---
 
 func instantiateDBConnection() {
 	var err error
@@ -232,7 +233,6 @@ func auctionHandler(w http.ResponseWriter, r *http.Request) {
 	tmpl.Execute(w, data)
 }
 
-// example: GET /bid/{:auctionID}?amount=100
 func bidHandler(w http.ResponseWriter, r *http.Request) {
 	logHttpRequest(r)
 	session, _ := store.Get(r, CookieName)
@@ -244,18 +244,54 @@ func bidHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Parse the query parameters
-	query := r.URL.Query()
-	auction := query.Get("auction")
-	amount := query.Get("amount")
-
-	// Validate the parameters
-	if auction == "" || amount == "" {
-		http.Error(w, "Invalid request. Missing 'auction' or 'amount' parameters.", http.StatusBadRequest)
+	// Check the HTTP request method, we only want to parse the body for POST requests
+	if r.Method != http.MethodPost {
+		http.Error(w, "Only POST methods are allowed.", http.StatusBadRequest)
 		return
 	}
 
+	// Parse the form data from the request body
+	err = r.ParseForm()
+	if err != nil {
+		http.Error(w, "Error parsing form data", http.StatusBadRequest)
+		return
+	}
+
+	// Access the form values by their keys
+	auctionIDStr := r.FormValue("auction")
+	amountStr := r.FormValue("amount")
+
+	if auctionIDStr == "" || amountStr == "" {
+		http.Error(w, "Error parsing form data:", http.StatusMethodNotAllowed)
+		return
+	}
+
+	var amount float64
+	amount, err = strconv.ParseFloat(amountStr, 64)
+	if err != nil {
+		// Handle the error if the conversion fails
+		fmt.Println("Error:", err)
+		return
+	}
+
+	res, err := db.Exec(`UPDATE auctions SET price = ? WHERE id = ?`, amount, auctionIDStr)
+	if err != nil {
+		http.Error(w, "Error updating auction price:", http.StatusMethodNotAllowed)
+		return
+	}
+
+	log.Println(res)
+
+	// You can now use auction and amount as needed
+	str := fmt.Sprintf("'%s' placed a bid on item %s for amount: $%.2f\n", data.Username, auctionIDStr, amount)
+	fmt.Println(str)
+	data.Message = str
+
 	// Respond with a success message
-	response := fmt.Sprintf("Auction successful! '%s' has placed bid $%s to %s's auction.", data.Username, amount, auction)
-	w.Write([]byte(response))
+	tmpl, err := template.ParseFiles("web/templates/base.html", "web/templates/bid.html")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	tmpl.Execute(w, data)
 }
