@@ -1,2 +1,3 @@
 - [https://learn.snyk.io/lesson/csrf-attack/](https://learn.snyk.io/lesson/csrf-attack/), accessed 26/09/2023
 - [https://github.com/gorilla/csrf#html-forms](https://github.com/gorilla/csrf#html-forms)
+- [https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html#synchronizer-token-pattern](https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html#synchronizer-token-pattern)
