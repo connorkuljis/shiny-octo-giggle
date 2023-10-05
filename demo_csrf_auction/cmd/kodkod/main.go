@@ -60,6 +60,8 @@ func main() {
 
 	router.HandleFunc("/bid", bidHandler)
 
+	router.HandleFunc("/xsrf", xsrfHandler)
+
 	var csrfMiddleware = csrf.Protect(
 		[]byte("your-secret-key"), // Replace with your own secret key
 		csrf.Secure(false),        // Set to true in production to enforce HTTPS
@@ -269,7 +271,6 @@ func bidHandler(w http.ResponseWriter, r *http.Request) {
 	var amount float64
 	amount, err = strconv.ParseFloat(amountStr, 64)
 	if err != nil {
-		// Handle the error if the conversion fails
 		fmt.Println("Error:", err)
 		return
 	}
@@ -282,16 +283,23 @@ func bidHandler(w http.ResponseWriter, r *http.Request) {
 
 	log.Println(res)
 
-	// You can now use auction and amount as needed
 	str := fmt.Sprintf("'%s' placed a bid on item %s for amount: $%.2f\n", data.Username, auctionIDStr, amount)
 	fmt.Println(str)
 	data.Message = str
 
-	// Respond with a success message
 	tmpl, err := template.ParseFiles("web/templates/base.html", "web/templates/bid.html")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	tmpl.Execute(w, data)
+}
+
+func xsrfHandler(w http.ResponseWriter, r *http.Request) {
+	tmpl, err := template.ParseFiles("web/templates/xsrf.html")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	tmpl.Execute(w, nil)
 }
