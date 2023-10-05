@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/connorkuljis/kodkod/internal/auctions"
+	auction "github.com/connorkuljis/kodkod/internal/auctions"
 
 	"github.com/gorilla/sessions"
 
@@ -32,6 +32,7 @@ type PageData struct {
 	IsLoggedIn     bool
 	AuctionData    []auction.Auction
 	CurrentAuction auction.Auction
+	Message        string
 }
 
 // Entry point to our application
@@ -48,10 +49,9 @@ func main() {
 	http.HandleFunc("/users/login", loginHandler)
 	http.HandleFunc("/users/logout", logoutHandler)
 	http.HandleFunc("/users/register", registerHandler)
-
 	http.HandleFunc("/auction/", auctionHandler)
-
 	http.HandleFunc("/bid", bidHandler)
+	http.HandleFunc("/xsrf", xsrfHandler)
 
 	// Spin-up server.
 	http.ListenAndServe(":8080", nil)
@@ -221,30 +221,68 @@ func auctionHandler(w http.ResponseWriter, r *http.Request) {
 	tmpl.Execute(w, data)
 }
 
-// example: GET /bid/{:auctionID}?amount=100
 func bidHandler(w http.ResponseWriter, r *http.Request) {
 	logHttpRequest(r)
 	session, _ := store.Get(r, CookieName)
 	data := setPageData(session)
 
-	err := session.Save(r, w)
+	// Check the HTTP request method, we only want to parse the body for POST requests
+	if r.Method != http.MethodPost {
+		http.Error(w, "Only POST methods are allowed.", http.StatusBadRequest)
+		return
+	}
+
+	// Parse the form data from the request body
+	err := r.ParseForm()
+	if err != nil {
+		http.Error(w, "Error parsing form data", http.StatusBadRequest)
+		return
+	}
+
+	// Access the form values by their keys
+	auctionIDStr := r.FormValue("auction")
+	amountStr := r.FormValue("amount")
+
+	if auctionIDStr == "" || amountStr == "" {
+		http.Error(w, "Error parsing form data:", http.StatusMethodNotAllowed)
+		return
+	}
+
+	var amount float64
+	amount, err = strconv.ParseFloat(amountStr, 64)
+	if err != nil {
+		fmt.Println("Error:", err)
+		return
+	}
+
+	res, err := db.Exec(`UPDATE auctions SET price = ? WHERE id = ?`, amount, auctionIDStr)
+	if err != nil {
+		http.Error(w, "Error updating auction price:", http.StatusMethodNotAllowed)
+		return
+	}
+	log.Println(res.RowsAffected())
+
+	err = session.Save(r, w)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	// Parse the query parameters
-	query := r.URL.Query()
-	auction := query.Get("auction")
-	amount := query.Get("amount")
+	data.Message = fmt.Sprintf("'%s' placed a bid on item %s for amount: $%.2f\n", data.Username, auctionIDStr, amount)
 
-	// Validate the parameters
-	if auction == "" || amount == "" {
-		http.Error(w, "Invalid request. Missing 'auction' or 'amount' parameters.", http.StatusBadRequest)
+	tmpl, err := template.ParseFiles("web/templates/base.html", "web/templates/bid.html")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+	tmpl.Execute(w, data)
+}
 
-	// Respond with a success message
-	response := fmt.Sprintf("Auction successful! '%s' has placed bid $%s to %s's auction.", data.Username, amount, auction)
-	w.Write([]byte(response))
+func xsrfHandler(w http.ResponseWriter, r *http.Request) {
+	tmpl, err := template.ParseFiles("web/templates/xsrf.html")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	tmpl.Execute(w, nil)
 }
